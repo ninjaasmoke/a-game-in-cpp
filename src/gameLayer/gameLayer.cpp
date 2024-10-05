@@ -75,14 +75,31 @@ bool gameLogic(float deltaTime)
 		movement.x += 1;
 	}
 
+	static glm::vec2 velocity = {0, 0};
+	const float acceleration = 100.0f; // Acceleration factor
+	const float maxSpeed = 300.0f;	   // Maximum speed
+
 	if (movement.x != 0 || movement.y != 0)
 	{
-		movement = glm::normalize(movement) * 200.f * deltaTime;
+		movement = glm::normalize(movement);
 
-		gamePlayData.playerPos += movement;
+		velocity += movement * acceleration * deltaTime;
+
+		if (glm::length(velocity) > maxSpeed)
+		{
+			velocity = glm::normalize(velocity) * maxSpeed;
+		}
+	}
+	else
+	{
+		velocity *= 0.95f; 
+		if (glm::length(velocity) < 0.1f)
+		{
+			velocity = {0, 0};
+		}
 	}
 
-#pragma region movement
+	gamePlayData.playerPos += velocity * deltaTime;
 
 	renderer.renderRectangle({gamePlayData.playerPos, 100, 100}, spaceshipTexture);
 
