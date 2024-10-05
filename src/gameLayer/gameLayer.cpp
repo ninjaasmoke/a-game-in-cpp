@@ -41,8 +41,13 @@ bool initGame()
 	backgroundTextures[2].loadFromFile(RESOURCES_PATH "backgrounds/level_1/planets.png", true);
 
 	tileRenderers[0].texture = backgroundTextures[0];
+	tileRenderers[0].parallaxStrength = 0.0;
+
 	tileRenderers[1].texture = backgroundTextures[1];
+	tileRenderers[1].parallaxStrength = 0.1;
+
 	tileRenderers[2].texture = backgroundTextures[2];
+	tileRenderers[2].parallaxStrength = 0.7;
 
 	return true;
 }
@@ -114,8 +119,8 @@ bool gameLogic(float deltaTime)
 	}
 
 	static glm::vec2 velocity = {0, 0};
-	const float acceleration = 200.0f; // Acceleration factor
-	const float maxSpeed = 300.0f;	   // Maximum speed
+	const float acceleration = 300.0f; // Acceleration factor
+	const float maxSpeed = 500.0f;	   // Maximum speed
 
 	if (movement.x != 0 || movement.y != 0)
 	{
@@ -130,7 +135,7 @@ bool gameLogic(float deltaTime)
 	}
 	else
 	{
-		velocity *= 0.99f;
+		velocity *= 0.999f;
 		if (glm::length(velocity) < 0.1f)
 		{
 			velocity = {0, 0};
