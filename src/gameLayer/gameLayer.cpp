@@ -68,26 +68,38 @@ bool gameLogic(float deltaTime)
 
 #pragma region render background
 
-	// renderer.currentCamera.follow(gamePlayData.playerPos, deltaTime * 100, 10, 200, w, h);
-
-	// renderer.renderRectangle({glm::vec2{0, 0}, w, h}, backgroundTexture);
-
-	// renderer.flush();
-
 	for (int i = 0; i < BACKGROUND_COUNT; i++)
 	{
 		tileRenderers[i].render(renderer);
 	}
 
-	// return true;
+#pragma endregion
+
+#pragma region mouse pos
+
+	glm::vec2 mousePos = platform::getRelMousePosition();
+	glm::vec2 playerPos = gamePlayData.playerPos;
+
+	glm::vec2 screenCenter(w / 2.f, h / 2.f);
+
+	glm::vec2 mouseDirection = mousePos - playerPos;
+
+	if (glm::length(mouseDirection) > 0.01f)
+	{
+		mouseDirection = glm::normalize(mouseDirection);
+	}
+	else
+	{
+		mouseDirection = glm::vec2(1.0f, 0.0f);
+	}
+
+	float spaceShipAngle = atan2(mouseDirection.y, -mouseDirection.x);
 
 #pragma endregion
 
 	renderer.currentCamera.follow(gamePlayData.playerPos, deltaTime * 100, 10, 200, w, h);
 
-	// renderer.renderRectangle({glm::vec2{0, 0}, w, h}, backgroundTexture);
-
-	renderer.flush();
+	renderer.renderRectangle({gamePlayData.playerPos, 100, 100}, spaceshipTexture, Colors_White, {}, glm::degrees(spaceShipAngle) + 90.0f);
 
 #pragma region movement
 
@@ -144,11 +156,17 @@ bool gameLogic(float deltaTime)
 
 	gamePlayData.playerPos += velocity * deltaTime;
 
-	renderer.renderRectangle({gamePlayData.playerPos, 100, 100}, spaceshipTexture);
+	// renderer.renderRectangle({gamePlayData.playerPos, 100, 100}, spaceshipTexture);
 
 	renderer.flush();
 
 	// ImGui::ShowDemoWindow();
+
+	ImGui::Begin("Mouse Data");
+	ImGui::Text("Mouse Position: (%.1f, %.1f)", mousePos.x, mousePos.y);
+	ImGui::Text("Mouse Direction: (%.2f, %.2f)", mouseDirection.x, mouseDirection.y);
+	ImGui::Text("SpaceShip Angle: %.2f degrees", glm::degrees(spaceShipAngle));
+	ImGui::End();
 
 	return true;
 #pragma endregion
