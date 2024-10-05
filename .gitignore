@@ -9,3 +9,5 @@ Makefile
 /.vscode
 
 **/.DS_Store
+
+/imgui.ini
