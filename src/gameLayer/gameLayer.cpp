@@ -15,7 +15,8 @@
 
 struct GamePlayData
 {
-	glm::vec2 playerPos = {100, 100};
+	glm::vec2 playerPos = {-100, -100};
+	float playerAngle = 0.0f;
 };
 
 GamePlayData gamePlayData;
@@ -35,7 +36,7 @@ bool initGame()
 	gl2d::init();
 	renderer.create();
 
-	spaceshipTexture.loadFromFile(RESOURCES_PATH "spaceShip/ships/green.png", true);
+	spaceshipTexture.loadFromFile(RESOURCES_PATH "spaceShip/ships/level_1.png", true);
 	backgroundTextures[0].loadFromFile(RESOURCES_PATH "backgrounds/level_1/dust.png", true);
 	backgroundTextures[1].loadFromFile(RESOURCES_PATH "backgrounds/level_1/stars.png", true);
 	backgroundTextures[2].loadFromFile(RESOURCES_PATH "backgrounds/level_1/planets.png", true);
@@ -75,31 +76,9 @@ bool gameLogic(float deltaTime)
 
 #pragma endregion
 
-#pragma region mouse pos
-
-	glm::vec2 mousePos = platform::getRelMousePosition();
-	glm::vec2 playerPos = gamePlayData.playerPos;
-
-	glm::vec2 screenCenter(w / 2.f, h / 2.f);
-
-	glm::vec2 mouseDirection = mousePos - playerPos;
-
-	if (glm::length(mouseDirection) > 0.01f)
-	{
-		mouseDirection = glm::normalize(mouseDirection);
-	}
-	else
-	{
-		mouseDirection = glm::vec2(1.0f, 0.0f);
-	}
-
-	float spaceShipAngle = atan2(mouseDirection.y, -mouseDirection.x);
-
-#pragma endregion
-
+	renderer.renderRectangle({gamePlayData.playerPos, 100, 100}, spaceshipTexture, Colors_White, {}, glm::degrees(gamePlayData.playerAngle) - 90.0f);
 	renderer.currentCamera.follow(gamePlayData.playerPos, deltaTime * 100, 10, 200, w, h);
 
-	renderer.renderRectangle({gamePlayData.playerPos, 100, 100}, spaceshipTexture, Colors_White, {}, glm::degrees(spaceShipAngle) + 90.0f);
 
 #pragma region movement
 
@@ -130,13 +109,13 @@ bool gameLogic(float deltaTime)
 		movement.x += 1;
 	}
 
-	static glm::vec2 velocity = {0, 0};
-	const float acceleration = 300.0f; // Acceleration factor
+	static glm::vec2 velocity = {-100, -100};
+	const float acceleration = 500.0f; // Acceleration factor
 	const float maxSpeed = 500.0f;	   // Maximum speed
 
 	if (movement.x != 0 || movement.y != 0)
 	{
-		movement = glm::normalize(movement);
+		// movement = glm::normalize(movement);
 
 		velocity += movement * acceleration * deltaTime;
 
@@ -144,10 +123,13 @@ bool gameLogic(float deltaTime)
 		{
 			velocity = glm::normalize(velocity) * maxSpeed;
 		}
+
+		// Update player angle
+		gamePlayData.playerAngle = atan2(velocity.y * 2, -velocity.x * 2);
 	}
 	else
 	{
-		velocity *= 0.999f;
+		velocity *= 0.99f;
 		if (glm::length(velocity) < 0.1f)
 		{
 			velocity = {0, 0};
@@ -161,12 +143,6 @@ bool gameLogic(float deltaTime)
 	renderer.flush();
 
 	// ImGui::ShowDemoWindow();
-
-	ImGui::Begin("Mouse Data");
-	ImGui::Text("Mouse Position: (%.1f, %.1f)", mousePos.x, mousePos.y);
-	ImGui::Text("Mouse Direction: (%.2f, %.2f)", mouseDirection.x, mouseDirection.y);
-	ImGui::Text("SpaceShip Angle: %.2f degrees", glm::degrees(spaceShipAngle));
-	ImGui::End();
 
 	return true;
 #pragma endregion
