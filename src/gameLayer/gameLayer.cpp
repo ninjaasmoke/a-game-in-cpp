@@ -22,10 +22,12 @@ GamePlayData gamePlayData;
 
 gl2d::Renderer2D renderer;
 
-gl2d::Texture spaceshipTexture;
-gl2d::Texture backgroundTexture;
+constexpr int BACKGROUND_COUNT = 3;
 
-TileRenderer tileRenderer;
+gl2d::Texture spaceshipTexture;
+gl2d::Texture backgroundTextures[BACKGROUND_COUNT];
+
+TileRenderer tileRenderers[BACKGROUND_COUNT];
 
 bool initGame()
 {
@@ -34,9 +36,13 @@ bool initGame()
 	renderer.create();
 
 	spaceshipTexture.loadFromFile(RESOURCES_PATH "spaceShip/ships/green.png", true);
-	backgroundTexture.loadFromFile(RESOURCES_PATH "backgrounds/bg_1.png", true);
+	backgroundTextures[0].loadFromFile(RESOURCES_PATH "backgrounds/level_1/dust.png", true);
+	backgroundTextures[1].loadFromFile(RESOURCES_PATH "backgrounds/level_1/stars.png", true);
+	backgroundTextures[2].loadFromFile(RESOURCES_PATH "backgrounds/level_1/planets.png", true);
 
-	tileRenderer.texture = backgroundTexture;
+	tileRenderers[0].texture = backgroundTextures[0];
+	tileRenderers[1].texture = backgroundTextures[1];
+	tileRenderers[2].texture = backgroundTextures[2];
 
 	return true;
 }
@@ -63,7 +69,10 @@ bool gameLogic(float deltaTime)
 
 	// renderer.flush();
 
-	tileRenderer.render(renderer);
+	for (int i = 0; i < BACKGROUND_COUNT; i++)
+	{
+		tileRenderers[i].render(renderer);
+	}
 
 	// return true;
 
