@@ -1,4 +1,5 @@
 #define GLM_ENABLE_EXPERIMENTAL
+
 #include "gameLayer.h"
 #include <glad/glad.h>
 #include <glm/glm.hpp>
@@ -10,12 +11,11 @@
 #include "imfilebrowser.h"
 #include <gl2d/gl2d.h>
 #include <platformTools.h>
-
 #include <tileRendered.h>
 
 struct GamePlayData
 {
-	glm::vec2 playerPos = {-100, -100};
+	glm::vec2 playerPos = {0, 0};
 	float playerAngle = 0.0f;
 };
 
@@ -26,6 +26,8 @@ gl2d::Renderer2D renderer;
 constexpr int BACKGROUND_COUNT = 3;
 
 gl2d::Texture spaceshipTexture;
+gl2d::TextureAtlasPadding spaceshipAtlas;
+
 gl2d::Texture backgroundTextures[BACKGROUND_COUNT];
 
 TileRenderer tileRenderers[BACKGROUND_COUNT];
@@ -36,7 +38,10 @@ bool initGame()
 	gl2d::init();
 	renderer.create();
 
-	spaceshipTexture.loadFromFile(RESOURCES_PATH "spaceShip/ships/level_1.png", true);
+	spaceshipTexture.loadFromFileWithPixelPadding(RESOURCES_PATH "spaceShip/stitchedFiles/spaceships.png", 1, true);
+
+	spaceshipAtlas = gl2d::TextureAtlasPadding(5, 2, spaceshipTexture.GetSize().x, spaceshipTexture.GetSize().y);
+
 	backgroundTextures[0].loadFromFile(RESOURCES_PATH "backgrounds/level_1/dust.png", true);
 	backgroundTextures[1].loadFromFile(RESOURCES_PATH "backgrounds/level_1/stars.png", true);
 	backgroundTextures[2].loadFromFile(RESOURCES_PATH "backgrounds/level_1/planets.png", true);
@@ -76,9 +81,15 @@ bool gameLogic(float deltaTime)
 
 #pragma endregion
 
-	renderer.renderRectangle({gamePlayData.playerPos, 100, 100}, spaceshipTexture, Colors_White, {}, glm::degrees(gamePlayData.playerAngle) - 90.0f);
-	renderer.currentCamera.follow(gamePlayData.playerPos, deltaTime * 100, 10, 200, w, h);
+#pragma region render ship
 
+	constexpr float shipSize = 100.0f;
+
+	renderer.renderRectangle({gamePlayData.playerPos - glm::vec2(shipSize / 2, shipSize / 2), shipSize, shipSize}, spaceshipTexture, Colors_White, {}, glm::degrees(gamePlayData.playerAngle) - 90.0f, spaceshipAtlas.get(1, 1));
+
+#pragma endregion
+
+	renderer.currentCamera.follow(gamePlayData.playerPos, deltaTime * 100, 10, 200, w, h);
 
 #pragma region movement
 
