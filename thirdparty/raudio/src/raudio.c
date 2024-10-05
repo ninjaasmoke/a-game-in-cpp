@@ -499,7 +499,7 @@ void CloseAudioDevice(void)
 }
 
 // Check if device has been initialized successfully
-bool IsAudioDeviceReady(void)
+RAUDIO_BOOL IsAudioDeviceReady(void)
 {
     return AUDIO.System.isReady;
 }
@@ -966,7 +966,7 @@ void StopSound(Sound sound)
 }
 
 // Check if a sound is playing
-bool IsSoundPlaying(Sound sound)
+RAUDIO_BOOL IsSoundPlaying(Sound sound)
 {
     return IsAudioBufferPlaying(sound.stream.buffer);
 }
@@ -1432,7 +1432,7 @@ void UpdateMusicStream(Music music)
 }
 
 // Check if any music is playing
-bool IsMusicPlaying(Music music)
+RAUDIO_BOOL IsMusicPlaying(Music music)
 {
     return IsAudioStreamPlaying(music.stream);
 }
@@ -1567,7 +1567,7 @@ void UpdateAudioStream(AudioStream stream, const void *data, int samplesCount)
 }
 
 // Check if any audio stream buffers requires refill
-bool IsAudioStreamProcessed(AudioStream stream)
+RAUDIO_BOOL IsAudioStreamProcessed(AudioStream stream)
 {
     if (stream.buffer == NULL) return false;
 
@@ -1593,7 +1593,7 @@ void ResumeAudioStream(AudioStream stream)
 }
 
 // Check if audio stream is playing.
-bool IsAudioStreamPlaying(AudioStream stream)
+RAUDIO_BOOL IsAudioStreamPlaying(AudioStream stream)
 {
     return IsAudioBufferPlaying(stream.buffer);
 }

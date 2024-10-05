@@ -1,4 +1,5 @@
 #include <gl2d/gl2dParticleSystem.h>
+#include <arm_neon.h>
 
 namespace gl2d
 {
@@ -226,7 +227,7 @@ void ParticleSystem::applyMovement(float deltaTime)
 
 	}
 
-	__m128 _deltaTime = _mm_set1_ps(deltaTime);
+	float32x4_t _deltaTime = vdupq_n_f32(deltaTime);
 
 #pragma region applyDrag
 

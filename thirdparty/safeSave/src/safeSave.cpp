@@ -18,6 +18,12 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#elif defined(__APPLE__)
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+
 #endif
 
 
@@ -402,6 +408,59 @@ namespace sfs
 		fileMapping = {};
 	}
 
-#endif	
+#elif defined(__APPLE__)
+    Errors openFileMapping(FileMapping& fileMapping, const char* name, size_t size, bool createIfNotExisting) {
+        int flags = O_RDWR;
+        if (createIfNotExisting) {
+            flags |= O_CREAT;
+        }
+        
+        fileMapping.internal.fd = open(name, flags, S_IRUSR | S_IWUSR);
+        if (fileMapping.internal.fd == -1) {
+            return Errors::couldNotOpenFinle;
+        }
+
+        // Set the file size
+        if (createIfNotExisting) {
+            if (ftruncate(fileMapping.internal.fd, size) == -1) {
+                close(fileMapping.internal.fd);
+                return Errors::couldNotOpenFinle;
+            }
+        }
+
+        // Get actual file size
+        struct stat st;
+        if (fstat(fileMapping.internal.fd, &st) == -1) {
+            close(fileMapping.internal.fd);
+            return Errors::couldNotOpenFinle;
+        }
+        
+        fileMapping.size = st.st_size;
+
+        fileMapping.pointer = mmap(nullptr, fileMapping.size, 
+                                  PROT_READ | PROT_WRITE, MAP_SHARED, 
+                                  fileMapping.internal.fd, 0);
+                                  
+        if (fileMapping.pointer == MAP_FAILED) {
+            close(fileMapping.internal.fd);
+            fileMapping.pointer = nullptr;
+            return Errors::couldNotOpenFinle;
+        }
+
+        return Errors::noError;
+    }
+
+    void closeFileMapping(FileMapping& fileMapping) {
+        if (fileMapping.pointer != nullptr && fileMapping.pointer != MAP_FAILED) {
+            munmap(fileMapping.pointer, fileMapping.size);
+        }
+        if (fileMapping.internal.fd != 0) {
+            close(fileMapping.internal.fd);
+        }
+        fileMapping.pointer = nullptr;
+        fileMapping.internal.fd = 0;
+        fileMapping.size = 0;
+    }
+#endif
 
 }

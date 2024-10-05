@@ -85,6 +85,18 @@
     #endif
 #endif
 
+#ifdef __APPLE__
+    #include <TargetConditionals.h>
+    #if TARGET_OS_MAC
+        // This ensures consistent types between header and implementation
+        #define RAUDIO_BOOL int
+    #else
+        #define RAUDIO_BOOL bool
+    #endif
+#else
+    #define RAUDIO_BOOL bool
+#endif
+
 // Wave type, defines audio wave data
 typedef struct Wave {
     unsigned int sampleCount;       // Total number of samples
@@ -143,7 +155,7 @@ extern "C" {            // Prevents name mangling of functions
 // Audio device management functions
 void InitAudioDevice(void);                                     // Initialize audio device and context
 void CloseAudioDevice(void);                                    // Close the audio device and context
-bool IsAudioDeviceReady(void);                                  // Check if audio device has been initialized successfully
+RAUDIO_BOOL IsAudioDeviceReady(void);                                  // Check if audio device has been initialized successfully
 void SetMasterVolume(float volume);                             // Set master volume (listener)
 
 // Wave/Sound loading/unloading functions
@@ -164,7 +176,7 @@ void ResumeSound(Sound sound);                                  // Resume a paus
 void PlaySoundMulti(Sound sound);                               // Play a sound (using multichannel buffer pool)
 void StopSoundMulti(void);                                      // Stop any sound playing (using multichannel buffer pool)
 int GetSoundsPlaying(void);                                     // Get number of sounds playing in the multichannel
-bool IsSoundPlaying(Sound sound);                               // Check if a sound is currently playing
+RAUDIO_BOOL IsSoundPlaying(Sound sound);                               // Check if a sound is currently playing
 void SetSoundVolume(Sound sound, float volume);                 // Set volume for a sound (1.0 is max level)
 void SetSoundPitch(Sound sound, float pitch);                   // Set pitch for a sound (1.0 is base level)
 void WaveFormat(Wave *wave, int sampleRate, int sampleSize, int channels);  // Convert wave data to desired format
@@ -180,7 +192,7 @@ void UpdateMusicStream(Music music);                            // Updates buffe
 void StopMusicStream(Music music);                              // Stop music playing
 void PauseMusicStream(Music music);                             // Pause music playing
 void ResumeMusicStream(Music music);                            // Resume playing paused music
-bool IsMusicPlaying(Music music);                               // Check if music is playing
+RAUDIO_BOOL IsMusicPlaying(Music music);                               // Check if music is playing
 void SetMusicVolume(Music music, float volume);                 // Set volume for music (1.0 is max level)
 void SetMusicPitch(Music music, float pitch);                   // Set pitch for a music (1.0 is base level)
 float GetMusicTimeLength(Music music);                          // Get music time length (in seconds)
@@ -190,11 +202,11 @@ float GetMusicTimePlayed(Music music);                          // Get current m
 AudioStream InitAudioStream(unsigned int sampleRate, unsigned int sampleSize, unsigned int channels); // Init audio stream (to stream raw audio pcm data)
 void UpdateAudioStream(AudioStream stream, const void *data, int samplesCount); // Update audio stream buffers with data
 void CloseAudioStream(AudioStream stream);                      // Close audio stream and free memory
-bool IsAudioStreamProcessed(AudioStream stream);                // Check if any audio stream buffers requires refill
+RAUDIO_BOOL IsAudioStreamProcessed(AudioStream stream);                // Check if any audio stream buffers requires refill
 void PlayAudioStream(AudioStream stream);                       // Play audio stream
 void PauseAudioStream(AudioStream stream);                      // Pause audio stream
 void ResumeAudioStream(AudioStream stream);                     // Resume audio stream
-bool IsAudioStreamPlaying(AudioStream stream);                  // Check if audio stream is playing
+RAUDIO_BOOL IsAudioStreamPlaying(AudioStream stream);                  // Check if audio stream is playing
 void StopAudioStream(AudioStream stream);                       // Stop audio stream
 void SetAudioStreamVolume(AudioStream stream, float volume);    // Set volume for audio stream (1.0 is max level)
 void SetAudioStreamPitch(AudioStream stream, float pitch);      // Set pitch for audio stream (1.0 is base level)
