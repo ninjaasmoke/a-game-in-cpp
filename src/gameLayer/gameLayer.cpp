@@ -1,14 +1,14 @@
 #define GLM_ENABLE_EXPERIMENTAL
 
 #include "gameLayer.h"
+#include "platformInput.h"
+#include "imgui.h"
+#include "imfilebrowser.h"
+#include <iostream>
+#include <sstream>
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
-#include "platformInput.h"
-#include "imgui.h"
-#include <iostream>
-#include <sstream>
-#include "imfilebrowser.h"
 #include <gl2d/gl2d.h>
 #include <platformTools.h>
 #include <tileRendered.h>
