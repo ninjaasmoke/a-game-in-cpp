@@ -7,3 +7,5 @@ CMakeSettings.json
 Makefile
 
 /.vscode
+
+**/.DS_Store
