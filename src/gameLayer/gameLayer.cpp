@@ -58,20 +58,20 @@ bool gameLogic(float deltaTime)
 	}
 	if (
 		platform::isButtonHeld(platform::Button::A) ||
-		platform::isButtonHeld(platform::Button::Left)
-	) {
+		platform::isButtonHeld(platform::Button::Left))
+	{
 		movement.x -= 1;
 	}
 	if (
 		platform::isButtonHeld(platform::Button::S) ||
-		platform::isButtonHeld(platform::Button::Down)
-	) {
+		platform::isButtonHeld(platform::Button::Down))
+	{
 		movement.y += 1;
 	}
 	if (
 		platform::isButtonHeld(platform::Button::D) ||
-		platform::isButtonHeld(platform::Button::Right)
-	) {
+		platform::isButtonHeld(platform::Button::Right))
+	{
 		movement.x += 1;
 	}
 
