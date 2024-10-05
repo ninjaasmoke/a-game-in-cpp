@@ -11,6 +11,8 @@
 #include <gl2d/gl2d.h>
 #include <platformTools.h>
 
+#include <tileRendered.h>
+
 struct GamePlayData
 {
 	glm::vec2 playerPos = {100, 100};
@@ -19,7 +21,11 @@ struct GamePlayData
 GamePlayData gamePlayData;
 
 gl2d::Renderer2D renderer;
+
 gl2d::Texture spaceshipTexture;
+gl2d::Texture backgroundTexture;
+
+TileRenderer tileRenderer;
 
 bool initGame()
 {
@@ -28,6 +34,9 @@ bool initGame()
 	renderer.create();
 
 	spaceshipTexture.loadFromFile(RESOURCES_PATH "spaceShip/ships/green.png", true);
+	backgroundTexture.loadFromFile(RESOURCES_PATH "backgrounds/bg_1.png", true);
+
+	tileRenderer.texture = backgroundTexture;
 
 	return true;
 }
@@ -45,6 +54,26 @@ bool gameLogic(float deltaTime)
 
 	renderer.updateWindowMetrics(w, h);
 #pragma endregion
+
+#pragma region render background
+
+	// renderer.currentCamera.follow(gamePlayData.playerPos, deltaTime * 100, 10, 200, w, h);
+
+	// renderer.renderRectangle({glm::vec2{0, 0}, w, h}, backgroundTexture);
+
+	// renderer.flush();
+
+	tileRenderer.render(renderer);
+
+	// return true;
+
+#pragma endregion
+
+	renderer.currentCamera.follow(gamePlayData.playerPos, deltaTime * 100, 10, 200, w, h);
+
+	// renderer.renderRectangle({glm::vec2{0, 0}, w, h}, backgroundTexture);
+
+	renderer.flush();
 
 #pragma region movement
 
@@ -92,7 +121,7 @@ bool gameLogic(float deltaTime)
 	}
 	else
 	{
-		velocity *= 0.99f; 
+		velocity *= 0.99f;
 		if (glm::length(velocity) < 0.1f)
 		{
 			velocity = {0, 0};
