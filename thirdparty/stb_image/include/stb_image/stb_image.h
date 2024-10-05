@@ -345,7 +345,7 @@ inline void *STBIMAGE_CUSTOM_REALOC(void *p, size_t oldSize, size_t newsz)
 
 	std::memcpy(newPtr, p, oldSize);
 
-	delete[] p;
+	delete[] (unsigned char*)p;
 	return newPtr;
 };
 
