@@ -76,7 +76,7 @@ bool gameLogic(float deltaTime)
 	}
 
 	static glm::vec2 velocity = {0, 0};
-	const float acceleration = 100.0f; // Acceleration factor
+	const float acceleration = 200.0f; // Acceleration factor
 	const float maxSpeed = 300.0f;	   // Maximum speed
 
 	if (movement.x != 0 || movement.y != 0)
@@ -92,7 +92,7 @@ bool gameLogic(float deltaTime)
 	}
 	else
 	{
-		velocity *= 0.95f; 
+		velocity *= 0.99f; 
 		if (glm::length(velocity) < 0.1f)
 		{
 			velocity = {0, 0};
