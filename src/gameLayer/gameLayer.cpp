@@ -11,12 +11,17 @@
 #include <gl2d/gl2d.h>
 #include <platformTools.h>
 
-#include <tileRendered.h>
+#include <tileRenderer.h>
+#include <enemy.h>
+#include <bullet.h>
 
 struct GamePlayData
 {
 	glm::vec2 playerPos = {0, 0};
 	float playerAngle = 0.0f;
+
+	std::vector<Bullet> bullets;
+	std::vector<Enemy> enemies;
 };
 
 GamePlayData gamePlayData;
@@ -26,7 +31,11 @@ gl2d::Renderer2D renderer;
 constexpr int BACKGROUND_COUNT = 3;
 
 gl2d::Texture spaceshipTexture;
+gl2d::Texture spaceshipsTexture;
 gl2d::TextureAtlasPadding spaceshipAtlas;
+
+gl2d::Texture bulletsTexture;
+gl2d::TextureAtlasPadding bulletsAtlas;
 
 gl2d::Texture backgroundTextures[BACKGROUND_COUNT];
 
@@ -38,9 +47,13 @@ bool initGame()
 	gl2d::init();
 	renderer.create();
 
-	spaceshipTexture.loadFromFileWithPixelPadding(RESOURCES_PATH "spaceShip/stitchedFiles/spaceships.png", 1, true);
+	spaceshipTexture.loadFromFile(RESOURCES_PATH "spaceShip/ships/level_1.png", 1, true);
 
+	spaceshipsTexture.loadFromFile(RESOURCES_PATH "spaceShip/stitchedFiles/spaceships.png", 128, true);
 	spaceshipAtlas = gl2d::TextureAtlasPadding(5, 2, spaceshipTexture.GetSize().x, spaceshipTexture.GetSize().y);
+
+	bulletsTexture.loadFromFileWithPixelPadding(RESOURCES_PATH "spaceShip/stitchedFiles/projectiles.png", 500, true);
+	bulletsAtlas = gl2d::TextureAtlasPadding(3, 2, bulletsTexture.GetSize().x, bulletsTexture.GetSize().y);
 
 	backgroundTextures[0].loadFromFile(RESOURCES_PATH "backgrounds/level_1/dust.png", true);
 	backgroundTextures[1].loadFromFile(RESOURCES_PATH "backgrounds/level_1/stars.png", true);
@@ -85,7 +98,62 @@ bool gameLogic(float deltaTime)
 
 	constexpr float shipSize = 100.0f;
 
-	renderer.renderRectangle({gamePlayData.playerPos - glm::vec2(shipSize / 2, shipSize / 2), shipSize, shipSize}, spaceshipTexture, Colors_White, {}, glm::degrees(gamePlayData.playerAngle) - 90.0f, spaceshipAtlas.get(1, 1));
+	// renderer.renderRectangle({gamePlayData.playerPos - glm::vec2(shipSize / 2, shipSize / 2), shipSize, shipSize}, spaceshipTexture, Colors_White, {}, glm::degrees(gamePlayData.playerAngle) - 90.0f);
+
+	renderSpaceShip(renderer, gamePlayData.playerPos, shipSize, spaceshipTexture, spaceshipAtlas.get(0, 0), gamePlayData.playerAngle);
+
+#pragma endregion
+
+#pragma region handle bulets
+
+	if (platform::isButtonPressedOn(platform::Button::Space))
+	{
+		Bullet b;
+
+		b.position = gamePlayData.playerPos;
+		b.fireDirection = glm::vec2(cos(gamePlayData.playerAngle), -sin(gamePlayData.playerAngle));
+
+		gamePlayData.bullets.push_back(b);
+	}
+
+	for (int i = 0; i < gamePlayData.bullets.size(); i++)
+	{
+		if (glm::distance(gamePlayData.bullets[i].position, gamePlayData.playerPos) > 5'000)
+		{
+			gamePlayData.bullets.erase(gamePlayData.bullets.begin() + i);
+			i--;
+			continue;
+		}
+
+		gamePlayData.bullets[i].update(deltaTime);
+	}
+
+#pragma endregion
+
+#pragma region render bullets
+
+	for (auto &b : gamePlayData.bullets)
+	{
+		b.render(renderer, bulletsTexture, bulletsAtlas);
+	}
+
+#pragma endregion
+
+#pragma region handle enemies
+
+	for (int i = 0; i < gamePlayData.enemies.size(); i++)
+	{
+		// TODO update enemies
+	}
+
+#pragma endregion
+
+#pragma region render enemies
+
+	for (auto &e : gamePlayData.enemies)
+	{
+		e.render(renderer, spaceshipsTexture, spaceshipAtlas);
+	}
 
 #pragma endregion
 
@@ -122,7 +190,7 @@ bool gameLogic(float deltaTime)
 
 	static glm::vec2 velocity = {-100, -100};
 	const float acceleration = 500.0f; // Acceleration factor
-	const float maxSpeed = 500.0f;	   // Maximum speed
+	const float maxSpeed = 800.0f;	   // Maximum speed
 
 	if (movement.x != 0 || movement.y != 0)
 	{
@@ -140,7 +208,7 @@ bool gameLogic(float deltaTime)
 	}
 	else
 	{
-		velocity *= 0.99f;
+		velocity *= 0.9f;
 		if (glm::length(velocity) < 0.1f)
 		{
 			velocity = {0, 0};
@@ -154,6 +222,19 @@ bool gameLogic(float deltaTime)
 	renderer.flush();
 
 	// ImGui::ShowDemoWindow();
+
+	ImGui::Begin("Gameplay data");
+
+	ImGui::Text("Bullets count: %d", (int)gamePlayData.bullets.size());
+	ImGui::Text("Enemies count: %d", (int)gamePlayData.enemies.size());
+	if (ImGui::Button("Spawn enemy"))
+	{
+		Enemy e;
+		e.position = gamePlayData.playerPos;
+		gamePlayData.enemies.push_back(e);
+	}
+
+	ImGui::End();
 
 	return true;
 #pragma endregion
