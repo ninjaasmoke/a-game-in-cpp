@@ -22,6 +22,11 @@ struct GamePlayData
 
 	std::vector<Bullet> bullets;
 	std::vector<Enemy> enemies;
+
+	int currentBullets = 10;
+	constexpr static int MAX_BULLETS = 10;
+	float timeSinceLastRefill = 0.0f;
+	constexpr static float BULLET_REFILL_TIME = 3.0f;
 };
 
 GamePlayData gamePlayData;
@@ -106,7 +111,7 @@ bool gameLogic(float deltaTime)
 
 #pragma region handle bulets
 
-	if (platform::isButtonPressedOn(platform::Button::Space))
+	if (platform::isButtonPressedOn(platform::Button::Space) && gamePlayData.currentBullets > 0)
 	{
 		Bullet b;
 
@@ -114,6 +119,8 @@ bool gameLogic(float deltaTime)
 		b.fireDirection = glm::vec2(cos(gamePlayData.playerAngle), -sin(gamePlayData.playerAngle));
 
 		gamePlayData.bullets.push_back(b);
+
+		gamePlayData.currentBullets--;
 	}
 
 	for (int i = 0; i < gamePlayData.bullets.size(); i++)
@@ -126,6 +133,17 @@ bool gameLogic(float deltaTime)
 		}
 
 		gamePlayData.bullets[i].update(deltaTime);
+	}
+
+	gamePlayData.timeSinceLastRefill += deltaTime;
+
+	if (gamePlayData.currentBullets < gamePlayData.MAX_BULLETS && gamePlayData.timeSinceLastRefill >= gamePlayData.BULLET_REFILL_TIME)
+	{
+		// Add one bullet
+		gamePlayData.currentBullets++;
+
+		// Reset the timer after refilling one bullet
+		gamePlayData.timeSinceLastRefill = 0.0f;
 	}
 
 #pragma endregion
@@ -226,6 +244,7 @@ bool gameLogic(float deltaTime)
 	ImGui::Begin("Gameplay data");
 
 	ImGui::Text("Bullets count: %d", (int)gamePlayData.bullets.size());
+	ImGui::Text("Bullets count: %d", gamePlayData.currentBullets);
 	ImGui::Text("Enemies count: %d", (int)gamePlayData.enemies.size());
 	if (ImGui::Button("Spawn enemy"))
 	{
