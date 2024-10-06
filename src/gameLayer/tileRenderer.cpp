@@ -1,4 +1,4 @@
-#include "tileRendered.h"
+#include "tileRenderer.h"
 
 void TileRenderer::render(gl2d::Renderer2D &renderer)
 {
@@ -17,4 +17,22 @@ void TileRenderer::render(gl2d::Renderer2D &renderer)
             renderer.renderRectangle(glm::vec4{glm::vec2{posX, posY}, 1, 1} * backgroundSize + glm::vec4(parallaxDistance, 0, 0), texture);
         }
     }
+}
+
+void renderSpaceShip(
+    gl2d::Renderer2D &renderer,
+    glm::vec2 position,
+    float size,
+    gl2d::Texture texture,
+    glm::vec4 uvs,
+    float angle)
+{
+
+	renderer.renderRectangle(
+        {position - glm::vec2(size / 2, size / 2), size, size},
+        texture,
+        Colors_White,
+        uvs,
+        glm::degrees(angle) - 90.0f
+    );
 }
