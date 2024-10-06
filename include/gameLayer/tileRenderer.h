@@ -10,3 +10,12 @@ struct TileRenderer
 
     void render(gl2d::Renderer2D &renderer);
 };
+
+void renderSpaceShip(
+    gl2d::Renderer2D &renderer,
+    glm::vec2 position, 
+    float size,
+    gl2d::Texture texture,
+    glm::vec4 uvs, 
+    float angle  
+);
