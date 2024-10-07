@@ -18,7 +18,8 @@
 struct GamePlayData
 {
 	glm::vec2 playerPos = {0, 0};
-	float playerAngle = 0.0f;
+	float playerAngle = -0.360f;
+	glm::vec2 velocity = {0, 0};
 
 	std::vector<Bullet> bullets;
 	std::vector<Enemy> enemies;
@@ -88,6 +89,7 @@ bool gameLogic(float deltaTime)
 	glClear(GL_COLOR_BUFFER_BIT); // clear screen
 
 	renderer.updateWindowMetrics(w, h);
+	
 #pragma endregion
 
 #pragma region render background
@@ -206,7 +208,6 @@ bool gameLogic(float deltaTime)
 		movement.x += 1;
 	}
 
-	static glm::vec2 velocity = {-100, -100};
 	const float acceleration = 500.0f; // Acceleration factor
 	const float maxSpeed = 800.0f;	   // Maximum speed
 
@@ -214,26 +215,26 @@ bool gameLogic(float deltaTime)
 	{
 		// movement = glm::normalize(movement);
 
-		velocity += movement * acceleration * deltaTime;
+		gamePlayData.velocity += movement * acceleration * deltaTime;
 
-		if (glm::length(velocity) > maxSpeed)
+		if (glm::length(gamePlayData.velocity) > maxSpeed)
 		{
-			velocity = glm::normalize(velocity) * maxSpeed;
+			gamePlayData.velocity = glm::normalize(gamePlayData.velocity) * maxSpeed;
 		}
 
 		// Update player angle
-		gamePlayData.playerAngle = atan2(velocity.y * 2, -velocity.x * 2);
+		gamePlayData.playerAngle = atan2(gamePlayData.velocity.y * 2, -gamePlayData.velocity.x * 2);
 	}
 	else
 	{
-		velocity *= 0.9f;
-		if (glm::length(velocity) < 0.1f)
+		gamePlayData.velocity *= 0.9f;
+		if (glm::length(gamePlayData.velocity) < 0.1f)
 		{
-			velocity = {0, 0};
+			gamePlayData.velocity = {0, 0};
 		}
 	}
 
-	gamePlayData.playerPos += velocity * deltaTime;
+	gamePlayData.playerPos += gamePlayData.velocity * deltaTime;
 
 	// renderer.renderRectangle({gamePlayData.playerPos, 100, 100}, spaceshipTexture);
 
@@ -246,6 +247,9 @@ bool gameLogic(float deltaTime)
 	ImGui::Text("Bullets count: %d", (int)gamePlayData.bullets.size());
 	ImGui::Text("Bullets count: %d", gamePlayData.currentBullets);
 	ImGui::Text("Enemies count: %d", (int)gamePlayData.enemies.size());
+	ImGui::Text("Player position: (%.2f, %.2f)", gamePlayData.playerPos.x, gamePlayData.playerPos.y);
+	ImGui::Text("Player angle: %.2f", glm::degrees(gamePlayData.playerAngle));
+	ImGui::Text("Player velocity: (%.2f, %.2f)", gamePlayData.velocity.x, gamePlayData.velocity.y);
 	if (ImGui::Button("Spawn enemy"))
 	{
 		Enemy e;
