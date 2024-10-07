@@ -10,6 +10,7 @@
 #include "imfilebrowser.h"
 #include <gl2d/gl2d.h>
 #include <platformTools.h>
+#include <cstdio>
 
 #include <tileRenderer.h>
 #include <enemy.h>
@@ -49,14 +50,15 @@ TileRenderer tileRenderers[BACKGROUND_COUNT];
 
 bool initGame()
 {
+	std::srand(std::time(0));
 	// initializing stuff for the renderer
 	gl2d::init();
 	renderer.create();
 
 	spaceshipTexture.loadFromFile(RESOURCES_PATH "spaceShip/ships/level_1.png", 1, true);
 
-	spaceshipsTexture.loadFromFile(RESOURCES_PATH "spaceShip/stitchedFiles/spaceships.png", 128, true);
-	spaceshipAtlas = gl2d::TextureAtlasPadding(5, 2, spaceshipTexture.GetSize().x, spaceshipTexture.GetSize().y);
+	spaceshipsTexture.loadFromFileWithPixelPadding(RESOURCES_PATH "spaceShip/stitchedFiles/spaceships.png", 128, true);
+	spaceshipAtlas = gl2d::TextureAtlasPadding(5, 2, spaceshipsTexture.GetSize().x, spaceshipsTexture.GetSize().y);
 
 	bulletsTexture.loadFromFileWithPixelPadding(RESOURCES_PATH "spaceShip/stitchedFiles/projectiles.png", 500, true);
 	bulletsAtlas = gl2d::TextureAtlasPadding(3, 2, bulletsTexture.GetSize().x, bulletsTexture.GetSize().y);
@@ -89,7 +91,7 @@ bool gameLogic(float deltaTime)
 	glClear(GL_COLOR_BUFFER_BIT); // clear screen
 
 	renderer.updateWindowMetrics(w, h);
-	
+
 #pragma endregion
 
 #pragma region render background
@@ -111,7 +113,7 @@ bool gameLogic(float deltaTime)
 
 #pragma endregion
 
-#pragma region handle bulets
+#pragma region handle bullets
 
 	if (platform::isButtonPressedOn(platform::Button::Space) && gamePlayData.currentBullets > 0)
 	{
@@ -163,7 +165,7 @@ bool gameLogic(float deltaTime)
 
 	for (int i = 0; i < gamePlayData.enemies.size(); i++)
 	{
-		// TODO update enemies
+		gamePlayData.enemies[i].update(deltaTime, gamePlayData.playerPos);
 	}
 
 #pragma endregion
@@ -209,7 +211,7 @@ bool gameLogic(float deltaTime)
 	}
 
 	const float acceleration = 500.0f; // Acceleration factor
-	const float maxSpeed = 800.0f;	   // Maximum speed
+	const float maxSpeed = 1000.0f;	   // Maximum speed
 
 	if (movement.x != 0 || movement.y != 0)
 	{
@@ -250,10 +252,16 @@ bool gameLogic(float deltaTime)
 	ImGui::Text("Player position: (%.2f, %.2f)", gamePlayData.playerPos.x, gamePlayData.playerPos.y);
 	ImGui::Text("Player angle: %.2f", glm::degrees(gamePlayData.playerAngle));
 	ImGui::Text("Player velocity: (%.2f, %.2f)", gamePlayData.velocity.x, gamePlayData.velocity.y);
+
 	if (ImGui::Button("Spawn enemy"))
 	{
+		glm::uvec2 shipTypes[] = {{0, 0}, {0, 1}, {2, 0}, {3, 1}};
 		Enemy e;
 		e.position = gamePlayData.playerPos;
+		e.speed = 700 + rand() % 1000;
+		e.turnSpeed = 2.f + (rand() & 1000) / 500.f;
+		e.type = shipTypes[rand() % 4];
+
 		gamePlayData.enemies.push_back(e);
 	}
 
