@@ -1,4 +1,5 @@
 #define GLM_ENABLE_EXPERIMENTAL
+#define MAINSHIP_PATH "spaceShip/playerShip/Main Ship/"
 #include "gameLayer.h"
 #include <glad/glad.h>
 #include <glm/glm.hpp>
@@ -18,17 +19,23 @@
 
 struct GamePlayData
 {
-	glm::vec2 playerPos = {0, 0};
 	float playerAngle = -0.360f;
+
+	glm::vec2 playerPos = {0, 0};
 	glm::vec2 velocity = {0, 0};
 
 	std::vector<Bullet> bullets;
 	std::vector<Enemy> enemies;
 
 	int currentBullets = 10;
-	constexpr static int MAX_BULLETS = 10;
 	float timeSinceLastRefill = 0.0f;
+
+	float maxSpeed = 1000.0f;
+	float timeSinceBoost = 0.0f;
+
+	constexpr static int MAX_BULLETS = 10;
 	constexpr static float BULLET_REFILL_TIME = 3.0f;
+	constexpr static float BOOST_TIME = 3.0f;
 };
 
 GamePlayData gamePlayData;
@@ -55,7 +62,7 @@ bool initGame()
 	gl2d::init();
 	renderer.create();
 
-	spaceshipTexture.loadFromFile(RESOURCES_PATH "spaceShip/ships/level_1.png", 1, true);
+	spaceshipTexture.loadFromFile(RESOURCES_PATH MAINSHIP_PATH "Main Ship - Bases/PNGs/Main Ship - Base - Full health.png", true, true);
 
 	spaceshipsTexture.loadFromFileWithPixelPadding(RESOURCES_PATH "spaceShip/stitchedFiles/spaceships.png", 128, true);
 	spaceshipAtlas = gl2d::TextureAtlasPadding(5, 2, spaceshipsTexture.GetSize().x, spaceshipsTexture.GetSize().y);
@@ -105,7 +112,7 @@ bool gameLogic(float deltaTime)
 
 #pragma region render ship
 
-	constexpr float shipSize = 100.0f;
+	constexpr float shipSize = 150.0f;
 
 	// renderer.renderRectangle({gamePlayData.playerPos - glm::vec2(shipSize / 2, shipSize / 2), shipSize, shipSize}, spaceshipTexture, Colors_White, {}, glm::degrees(gamePlayData.playerAngle) - 90.0f);
 
@@ -120,7 +127,7 @@ bool gameLogic(float deltaTime)
 		Bullet b;
 
 		b.position = gamePlayData.playerPos;
-		b.fireDirection = glm::vec2(cos(gamePlayData.playerAngle), -sin(gamePlayData.playerAngle));
+		b.fireDirection = -glm::vec2(cos(gamePlayData.playerAngle), -sin(gamePlayData.playerAngle));
 
 		gamePlayData.bullets.push_back(b);
 
@@ -172,8 +179,17 @@ bool gameLogic(float deltaTime)
 
 #pragma region render enemies
 
-	for (auto &e : gamePlayData.enemies)
+	for (int i = 0; i < gamePlayData.enemies.size(); i++)
 	{
+		auto &e = gamePlayData.enemies[i];
+
+		if (glm::distance(e.position, gamePlayData.playerPos) > 5'000)
+		{
+			gamePlayData.enemies.erase(gamePlayData.enemies.begin() + i);
+			i--;
+			continue;
+		}
+
 		e.render(renderer, spaceshipsTexture, spaceshipAtlas);
 	}
 
@@ -210,8 +226,22 @@ bool gameLogic(float deltaTime)
 		movement.x += 1;
 	}
 
+	if (platform::isButtonHeld(platform::Button::Tab))
+	{
+		gamePlayData.maxSpeed = 2000.0f;
+		gamePlayData.timeSinceBoost += deltaTime;
+
+		if (gamePlayData.timeSinceBoost >= gamePlayData.BOOST_TIME)
+		{
+			gamePlayData.maxSpeed = 1000.0f;
+			gamePlayData.timeSinceBoost = 0.0f;
+		}
+
+	} else {
+		gamePlayData.maxSpeed = 1000.0f;
+	}
+
 	const float acceleration = 500.0f; // Acceleration factor
-	const float maxSpeed = 1000.0f;	   // Maximum speed
 
 	if (movement.x != 0 || movement.y != 0)
 	{
@@ -219,13 +249,13 @@ bool gameLogic(float deltaTime)
 
 		gamePlayData.velocity += movement * acceleration * deltaTime;
 
-		if (glm::length(gamePlayData.velocity) > maxSpeed)
+		if (glm::length(gamePlayData.velocity) > gamePlayData.maxSpeed)
 		{
-			gamePlayData.velocity = glm::normalize(gamePlayData.velocity) * maxSpeed;
+			gamePlayData.velocity = glm::normalize(gamePlayData.velocity) * gamePlayData.maxSpeed;
 		}
 
 		// Update player angle
-		gamePlayData.playerAngle = atan2(gamePlayData.velocity.y * 2, -gamePlayData.velocity.x * 2);
+		gamePlayData.playerAngle = atan2(-gamePlayData.velocity.y * 2, gamePlayData.velocity.x * 2);
 	}
 	else
 	{
@@ -252,12 +282,13 @@ bool gameLogic(float deltaTime)
 	ImGui::Text("Player position: (%.2f, %.2f)", gamePlayData.playerPos.x, gamePlayData.playerPos.y);
 	ImGui::Text("Player angle: %.2f", glm::degrees(gamePlayData.playerAngle));
 	ImGui::Text("Player velocity: (%.2f, %.2f)", gamePlayData.velocity.x, gamePlayData.velocity.y);
+	ImGui::Text("Player maxSpeed: %.2f", glm::length(gamePlayData.maxSpeed));
 
 	if (ImGui::Button("Spawn enemy"))
 	{
 		glm::uvec2 shipTypes[] = {{0, 0}, {0, 1}, {2, 0}, {3, 1}};
 		Enemy e;
-		e.position = gamePlayData.playerPos;
+		e.position = gamePlayData.playerPos - glm::vec2(0, 500);
 		e.speed = 700 + rand() % 1000;
 		e.turnSpeed = 2.f + (rand() & 1000) / 500.f;
 		e.type = shipTypes[rand() % 4];
