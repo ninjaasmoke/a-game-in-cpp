@@ -9,9 +9,15 @@ struct Enemy
     glm::vec2 position = {};
 
     float speed = 50.0f;
-	float turnSpeed = 1.0f;
+    float turnSpeed = 1.0f;
     float maxSpeed = 1000.0f;
-    float accelerationRate = 500.0f;
+    float accelerationRate = 1000.0f;
+
+    glm::vec2 wanderOffset = glm::vec2(0.0f);
+    float wanderRadius = 300.0f;
+    float wanderTimer = 0.0f;
+    float wanderInterval = 2.0f;
+    float totalTime = 0.0f;
 
     glm::vec2 viewDirection = {1, 0};
     float angle = 0.0f;
