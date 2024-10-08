@@ -18,17 +18,17 @@ void Enemy::render(gl2d::Renderer2D &renderer, gl2d::Texture &sprites, gl2d::Tex
 
 void Enemy::update(float deltaTime, glm::vec2 playerPos)
 {
-    // Update wandering offset periodically
+    // wandering offset periodically
     wanderTimer += deltaTime;
     if (wanderTimer >= wanderInterval)
     {
-        // Generate new random offset
+        // new random offset
         float angle = static_cast<float>(rand()) / RAND_MAX * 2 * M_PI;
         wanderOffset = glm::vec2(cos(angle), sin(angle)) * wanderRadius;
         wanderTimer = 0;
     }
 
-    // Calculate direction to player with wander offset
+    // direction to player with wander offset
     glm::vec2 targetPos = playerPos + wanderOffset;
     glm::vec2 directionToTarget = targetPos - position;
 
@@ -41,7 +41,7 @@ void Enemy::update(float deltaTime, glm::vec2 playerPos)
         directionToTarget = glm::normalize(directionToTarget);
     }
 
-    // Smoothly rotate towards target direction
+    // smoothrotate towards target direction
     glm::vec2 newDirection = {};
     if (glm::length(directionToTarget + viewDirection) <= 0.1f)
     {
@@ -53,15 +53,15 @@ void Enemy::update(float deltaTime, glm::vec2 playerPos)
     }
     viewDirection = glm::normalize(newDirection);
 
-    // Calculate acceleration with some randomness
+    // acceleration with some randomness
     float randomFactor = 1.0f + (static_cast<float>(rand()) / RAND_MAX - 0.5f) * 0.4f;
     glm::vec2 acceleration = viewDirection * accelerationRate * randomFactor;
 
-    // Add periodic speed variation
+    // add periodic speed variation
     float speedMultiplier = 1.0f + 0.2f * sin(totalTime * 2.0f);
     glm::vec2 velocity = speed * acceleration * deltaTime * speedMultiplier;
 
-    // Cap the velocity to maxSpeed
+    // cap velocity to maxSpeed
     if (glm::length(velocity) > maxSpeed)
     {
         velocity = glm::normalize(velocity) * maxSpeed;
