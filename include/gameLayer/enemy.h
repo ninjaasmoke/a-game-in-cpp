@@ -19,10 +19,15 @@ struct Enemy
     float wanderInterval = 2.0f;
     float totalTime = 0.0f;
 
+    float firedTime = 1.f;
+	float fireTimeReset = 0.8f;
+	float fireRange = 1.5;
+	float bulletSpeed = 2000.f;
+
     glm::vec2 viewDirection = {1, 0};
     float angle = 0.0f;
 
     void render(gl2d::Renderer2D &rendered, gl2d::Texture &sprites, gl2d::TextureAtlasPadding &atlas);
 
-    void update(float deltaTime, glm::vec2 playerPos);
+    bool update(float deltaTime, glm::vec2 playerPos);
 };
