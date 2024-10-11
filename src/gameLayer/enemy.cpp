@@ -16,7 +16,7 @@ void Enemy::render(gl2d::Renderer2D &renderer, gl2d::Texture &sprites, gl2d::Tex
         atlas.get(type.x, type.y));
 }
 
-void Enemy::update(float deltaTime, glm::vec2 playerPos)
+bool Enemy::update(float deltaTime, glm::vec2 playerPos)
 {
     // wandering offset periodically
     wanderTimer += deltaTime;
@@ -31,6 +31,27 @@ void Enemy::update(float deltaTime, glm::vec2 playerPos)
     // direction to player with wander offset
     glm::vec2 targetPos = playerPos + wanderOffset;
     glm::vec2 directionToTarget = targetPos - position;
+
+    bool shoot = (glm::length(directionToTarget + viewDirection) >= fireRange);
+    {
+        if (shoot)
+        {
+            if (firedTime <= 0.f)
+            {
+                firedTime = fireTimeReset;
+            }
+            else
+            {
+                shoot = false;
+            }
+        }
+    }
+
+    firedTime -= deltaTime;
+    if (firedTime < 0)
+    {
+        firedTime = 0.f;
+    }
 
     if (glm::length(directionToTarget) == 0)
     {
@@ -69,4 +90,6 @@ void Enemy::update(float deltaTime, glm::vec2 playerPos)
 
     position += velocity * deltaTime;
     totalTime += deltaTime;
+
+    return shoot;
 }
