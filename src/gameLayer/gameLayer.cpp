@@ -172,15 +172,6 @@ bool gameLogic(float deltaTime)
 
 	for (int i = 0; i < gamePlayData.enemies.size(); i++)
 	{
-		gamePlayData.enemies[i].update(deltaTime, gamePlayData.playerPos);
-	}
-
-#pragma endregion
-
-#pragma region render enemies
-
-	for (int i = 0; i < gamePlayData.enemies.size(); i++)
-	{
 		auto &e = gamePlayData.enemies[i];
 
 		if (glm::distance(e.position, gamePlayData.playerPos) > 5'000)
@@ -190,6 +181,21 @@ bool gameLogic(float deltaTime)
 			continue;
 		}
 
+		if(gamePlayData.enemies[i].update(deltaTime, gamePlayData.playerPos)) {
+			Bullet b;
+			b.position = e.position;
+			b.fireDirection = e.viewDirection;
+			b.bulletSpeed = e.bulletSpeed;
+			gamePlayData.bullets.push_back(b);
+		}
+	}
+
+#pragma endregion
+
+#pragma region render enemies
+
+	for (auto &e : gamePlayData.enemies)
+	{
 		e.render(renderer, spaceshipsTexture, spaceshipAtlas);
 	}
 
@@ -236,8 +242,9 @@ bool gameLogic(float deltaTime)
 			gamePlayData.maxSpeed = 1000.0f;
 			gamePlayData.timeSinceBoost = 0.0f;
 		}
-
-	} else {
+	}
+	else
+	{
 		gamePlayData.maxSpeed = 1000.0f;
 	}
 
@@ -292,6 +299,8 @@ bool gameLogic(float deltaTime)
 		e.speed = 700 + rand() % 1000;
 		e.turnSpeed = 2.f + (rand() & 1000) / 500.f;
 		e.type = shipTypes[rand() % 4];
+		e.fireRange = 1.5 + (rand() % 1000) / 2000.f;
+		e.fireTimeReset = 0.8 + (rand() % 1000) / 500.0; // lower = faster shooting
 
 		gamePlayData.enemies.push_back(e);
 	}
